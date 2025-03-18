@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.13)
 
+find_package(ament_cmake REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
 project (torch_kdtree LANGUAGES CXX CUDA)
 add_subdirectory(pybind11)
@@ -164,6 +166,32 @@ else()  #For compilation with setuptools -> Will copy the binary to the other sc
         COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:torch_knn> "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/torch_kdtree")
 endif()
 
+# Get Python install directory
+execute_process(
+  COMMAND "${Python3_EXECUTABLE}" -c "import site; print(site.getsitepackages()[0])"
+  OUTPUT_VARIABLE PYTHON_SITE_PACKAGES
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Install targets
+install(TARGETS torch_knn
+        EXPORT ${PROJECT_NAME}
+        LIBRARY DESTINATION "${PYTHON_SITE_PACKAGES}/torch_kdtree"
+        RUNTIME DESTINATION "${PYTHON_SITE_PACKAGES}/torch_kdtree"
+        ARCHIVE DESTINATION "${PYTHON_SITE_PACKAGES}/torch_kdtree"
+)
+
+# Install Python module files
+install(DIRECTORY torch_kdtree/
+        DESTINATION "${PYTHON_SITE_PACKAGES}/torch_kdtree"
+        FILES_MATCHING PATTERN "*.py"
+)
+
+# Add package.xml installation
+install(FILES package.xml
+        DESTINATION share/${PROJECT_NAME}
+)
+
 ##################################
 # Tests
 enable_testing()
@@ -186,3 +214,5 @@ list (SORT _variableNames)
 foreach (_variableName ${_variableNames})
     message(STATUS "${_variableName}=${${_variableName}}")
 endforeach()
+
+ament_package()

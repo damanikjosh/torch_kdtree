@@ -70,6 +70,7 @@ class CMakeBuild(build_ext):
             "-DPYTHON_EXECUTABLE={}".format(sys.executable),
             "-DEXAMPLE_VERSION_INFO={}".format(self.distribution.get_version()),
             "-DCMAKE_BUILD_TYPE={}".format(cfg),  # not used on MSVC, but no harm
+            "-DCMAKE_INSTALL_PREFIX={}".format(extdir),
             "-DPIP_BUILD=ON", #To activate setuptools specific CMake commands
         ]
         build_args = []
